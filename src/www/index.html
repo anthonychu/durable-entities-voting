@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link rel="stylesheet" type="text/css" href="default.css" />
+    <link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet" />
+    <title>Voting App</title>
+</head>
+<body>
+  <div id="container">
+    <div style="text-align: center">
+      <div id="logo">Serverless Voting</div>
+      <div id="space"></div>
+      <div id="space"></div>
+      <button name="vote" class="button button1" @click="incrementVote('dog')">
+        <i class="em em-dog"></i> Dogs - {{ votes.dog }}
+      </button>
+      <button name="vote" class="button button1" @click="incrementVote('rabbit')">
+        <i class="em em-rabbit"></i> Rabbits - {{ votes.rabbit }}
+      </button>
+      <button name="vote" class="button button1" @click="incrementVote('horse')">
+        <i class="em em-horse"></i> Horses - {{ votes.horse }}
+      </button>
+      <div id="space"></div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.4/dist/browser/signalr.min.js"></script>
+  <script>
+    var apiBaseUrl = 'https://testdurableentities.azurewebsites.net'
+
+    var data = {
+      votes: {}
+    }
+
+    var app = new Vue({
+      el: '#container',
+      data: data,
+      mounted: function() {
+        return axios.get(`${apiBaseUrl}/api/votes`).then(function (resp) {
+          var votes = resp.data
+          data.votes = votes
+        })
+      },
+      methods: {
+        incrementVote: function (choice) {
+          return axios.post(`${apiBaseUrl}/api/votes/${choice}/incr`)
+        }
+      }
+    })
+
+    var connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${apiBaseUrl}/api`)
+      .build()
+    
+    connection.on('votesUpdated', function(votingData) {
+      data.votes[votingData.animal] = votingData.votes
+    })
+
+    connection.start()
+  </script>
+</body>
+</html>
