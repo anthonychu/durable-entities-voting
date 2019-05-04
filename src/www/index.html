@@ -28,6 +28,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.4/dist/browser/signalr.min.js"></script>
   <script>
     var apiBaseUrl = 'https://testdurableentities.azurewebsites.net'
+    //var apiBaseUrl = 'http://localhost:7071'
 
     var data = {
       votes: {}
@@ -57,7 +58,14 @@
       data.votes[votingData.animal] = votingData.votes
     })
 
-    connection.start()
+    connection.onclose(start)
+    start()
+    
+    function start() {
+      connection.start().catch(function() {
+        setTimeout(start, 5000);
+      })
+    }
   </script>
 </body>
 </html>

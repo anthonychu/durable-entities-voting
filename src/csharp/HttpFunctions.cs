@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 
 namespace DurableEntitiesVoting
 {
     public static class HttpFunctions
     {
-        private static string[] animals = new string[] { "dog", "rabbit", "horse" };
+        public static EntityId DefaultEntityId = new EntityId("Votes", "default");
 
         [FunctionName(nameof(IncrementVote))]
         public static Task IncrementVote(
@@ -20,41 +21,31 @@ namespace DurableEntitiesVoting
             string choice,
             ILogger log)
         {
-            if (!animals.Contains(choice))
+            if (!VotingEntity.Animals.Contains(choice))
             {
                 throw new ArgumentException($"{choice} is not a valid animal");
             }
 
-            return client.SignalEntityAsync(new EntityId("Choice", choice), "incr");
+            return client.SignalEntityAsync(DefaultEntityId, "incr", choice);
         }
 
         [FunctionName(nameof(GetVotes))]
-        public static async Task<IActionResult> GetVotes(
+        public static async Task<Dictionary<string, int>> GetVotes(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "votes")] HttpRequest req,
             [OrchestrationClient] IDurableOrchestrationClient client,
             ILogger log)
         {
-            var results = new
-            {
-                dog = (await client.ReadEntityStateAsync<int>(new EntityId("Choice", "dog"))).EntityState,
-                rabbit = (await client.ReadEntityStateAsync<int>(new EntityId("Choice", "rabbit"))).EntityState,
-                horse = (await client.ReadEntityStateAsync<int>(new EntityId("Choice", "horse"))).EntityState
-            };
-            return new OkObjectResult(results);
+            
+            return (await client.ReadEntityStateAsync<Dictionary<string, int>>(DefaultEntityId)).EntityState;
         }
 
         [FunctionName(nameof(ClearVotes))]
-        public static async Task ClearVotes(
+        public static Task ClearVotes(
             [HttpTrigger(AuthorizationLevel.Function, "delete", Route = "votes")] HttpRequest req,
             [OrchestrationClient] IDurableOrchestrationClient client,
             ILogger log)
         {
-            await Task.WhenAll(new Task[]
-            {
-                client.SignalEntityAsync(new EntityId("Choice", "dog"), "clear"),
-                client.SignalEntityAsync(new EntityId("Choice", "rabbit"), "clear"),
-                client.SignalEntityAsync(new EntityId("Choice", "horse"), "clear")
-            });
+            return client.SignalEntityAsync(DefaultEntityId, "clear", "");
         }
     }
 }
