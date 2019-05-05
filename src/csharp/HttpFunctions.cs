@@ -21,9 +21,9 @@ namespace DurableEntitiesVoting
             string choice,
             ILogger log)
         {
-            if (!VotingEntity.Animals.Contains(choice))
+            if (!VotingEntity.Choices.Contains(choice))
             {
-                throw new ArgumentException($"{choice} is not a valid animal");
+                throw new ArgumentException($"{choice} is not a valid choice");
             }
 
             return client.SignalEntityAsync(DefaultEntityId, "incr", choice);
@@ -35,7 +35,6 @@ namespace DurableEntitiesVoting
             [OrchestrationClient] IDurableOrchestrationClient client,
             ILogger log)
         {
-            
             return (await client.ReadEntityStateAsync<Dictionary<string, int>>(DefaultEntityId)).EntityState;
         }
 

@@ -11,14 +11,14 @@
       <div id="logo">Serverless Voting</div>
       <div id="space"></div>
       <div id="space"></div>
-      <button name="vote" class="button button1" @click="incrementVote('dog')">
-        <i class="em em-dog"></i> Dogs - {{ votes.dog }}
+      <button name="vote" class="button button1" @click="incrementVote('1')">
+        <i class="em em-dog"></i> Dogs - {{ votes['1'] }}
       </button>
-      <button name="vote" class="button button1" @click="incrementVote('rabbit')">
-        <i class="em em-rabbit"></i> Rabbits - {{ votes.rabbit }}
+      <button name="vote" class="button button1" @click="incrementVote('2')">
+        <i class="em em-rabbit"></i> Rabbits - {{ votes['2'] }}
       </button>
-      <button name="vote" class="button button1" @click="incrementVote('horse')">
-        <i class="em em-horse"></i> Horses - {{ votes.horse }}
+      <button name="vote" class="button button1" @click="incrementVote('3')">
+        <i class="em em-horse"></i> Horses - {{ votes['3'] }}
       </button>
       <div id="space"></div>
     </div>
@@ -27,8 +27,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.4/dist/browser/signalr.min.js"></script>
   <script>
-    var apiBaseUrl = 'https://testdurableentities.azurewebsites.net'
-    //var apiBaseUrl = 'http://localhost:7071'
+    var apiBaseUrl = 'http://localhost:7071'
 
     var data = {
       votes: {}
@@ -55,7 +54,7 @@
       .build()
     
     connection.on('votesUpdated', function(votingData) {
-      data.votes[votingData.animal] = votingData.votes
+      data.votes[votingData.choice] = votingData.votes
     })
 
     connection.onclose(start)

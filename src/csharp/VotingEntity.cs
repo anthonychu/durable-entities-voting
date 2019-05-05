@@ -12,7 +12,7 @@ namespace DurableEntitiesVoting
 {
     public static class VotingEntity
     {
-        public static string[] Animals = new string[] { "dog", "rabbit", "horse" };
+        public static string[] Choices = new string[] { "1", "2", "3" };
 
         [FunctionName(nameof(ProcessOperation))]
         public static async Task ProcessOperation(
@@ -31,7 +31,7 @@ namespace DurableEntitiesVoting
                     break;
                 case "clear":
                     votes = InitializeVotes();
-                    await Task.WhenAll(Animals.Select(a => signalRMessages.AddAsync(BuildVotesUpdatedMessage(a, 0))));
+                    await Task.WhenAll(Choices.Select(a => signalRMessages.AddAsync(BuildVotesUpdatedMessage(a, 0))));
                     break;
             }
 
@@ -40,7 +40,7 @@ namespace DurableEntitiesVoting
 
         private static Dictionary<string, int> InitializeVotes()
         {
-            return Animals.ToDictionary(a => a, _ => 0);
+            return Choices.ToDictionary(a => a, _ => 0);
         }
 
         private static SignalRMessage BuildVotesUpdatedMessage(string choice, int votes)
@@ -48,10 +48,7 @@ namespace DurableEntitiesVoting
             return new SignalRMessage
             {
                 Target = "votesUpdated",
-                Arguments = new object[]
-                {
-                    new { animal = choice, votes }
-                }
+                Arguments = new object[] { new { choice, votes } }
             };
         }
     }
