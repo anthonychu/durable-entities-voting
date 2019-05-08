@@ -1,0 +1,1 @@
+Currently references a local build of the extension. Need to update to use official package.
