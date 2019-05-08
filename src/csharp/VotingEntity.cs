@@ -1,11 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 
 namespace DurableEntitiesVoting
@@ -27,11 +24,11 @@ namespace DurableEntitiesVoting
             {
                 case "incr":
                     votes[choice] += 1;
-                    await signalRMessages.AddAsync(BuildVotesUpdatedMessage(choice, votes[choice]));
+                    await signalRMessages.AddAsync(CreateVotesUpdatedMessage(choice, votes[choice]));
                     break;
                 case "clear":
                     votes = InitializeVotes();
-                    await Task.WhenAll(Choices.Select(a => signalRMessages.AddAsync(BuildVotesUpdatedMessage(a, 0))));
+                    await Task.WhenAll(Choices.Select(a => signalRMessages.AddAsync(CreateVotesUpdatedMessage(a, 0))));
                     break;
             }
 
@@ -43,7 +40,7 @@ namespace DurableEntitiesVoting
             return Choices.ToDictionary(a => a, _ => 0);
         }
 
-        private static SignalRMessage BuildVotesUpdatedMessage(string choice, int votes)
+        private static SignalRMessage CreateVotesUpdatedMessage(string choice, int votes)
         {
             return new SignalRMessage
             {
